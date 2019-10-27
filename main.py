@@ -131,7 +131,7 @@ class IpFinder(mainwindow, QMainWindow):
         # print(type(resultarpaTemp))
         listaIps = []
         for ar in resultarpaTemp:
-            if ('Interfaccia: '+self.myIpLan) in ar:
+            if (('Interfaccia: '+self.myIpLan) or ('Interface: '+self.myIpLan)) in ar:
                 indice = resultarpaTemp.index(ar)
                 # risul = [x.split('\n') for x in resultarpaTemp[indice:] if x.split('\n') != '']
                 risultati = [x for x in resultarpaTemp[indice:] if x != '']

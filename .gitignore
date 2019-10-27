@@ -1,6 +1,7 @@
 *.ui
 !gui.ui
 !gui_option.ui
+!gui_IpF.ui
 !kwidget/dialog_info/*
 !requirements.txt
 *.pkl
