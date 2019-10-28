@@ -1,13 +1,18 @@
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtWidgets import *
+from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import os
+from subprocess import DEVNULL, STDOUT, check_call
 from time import sleep
 # from gui import Ui_MainWindow as mainwindow
 from gui import Ui_MainWindow as mainwindow
 from waitingspinnerwidget import MySp
 
-class IpFinder(mainwindow, QMainWindow):
+def resource_path(relative_path):
+  if hasattr(sys, '_MEIPASS'):
+      return os.path.join(sys._MEIPASS, relative_path)
+  return os.path.join(os.path.abspath('.'), relative_path)
+
+class IpFinder(mainwindow, QtWidgets.QMainWindow):
     """"""
 
     def __init__(self,nomePc = None):
@@ -18,7 +23,7 @@ class IpFinder(mainwindow, QMainWindow):
         self.nomePc = nomePc
         self.listaNomi = {}
         self.setupUi(self)
-        icona = QtGui.QIcon('sunny.ico')
+        icona = QtGui.QIcon(resource_path('sunny.ico'))
         self.setWindowIcon(icona)
         self.tableWidget.ITEMDOUBLECLICK.connect(self.insertLineEdit)
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -98,7 +103,14 @@ class IpFinder(mainwindow, QMainWindow):
                 self.setComboNomePc(n)
 
     def funcCercaPc(self):
-        os.system('ipconfig >> {}'.format(self.myIpFile))
+        try:
+            stringa = 'ipconfig > ' + self.myIpFile
+            check_call(['ipconfig','>',self.myIpFile],shell=True)
+        except:
+            import traceback
+            print(traceback.format_exc())
+        print('ok')
+        # os.system('ipconfig >> {}'.format(self.myIpFile))
         with open(self.myIpFile, 'r') as ipfile:
             result = ipfile.readlines()
         for line in result:
@@ -122,7 +134,13 @@ class IpFinder(mainwindow, QMainWindow):
         for n in maskList:
             mask += n + '.'
         # print('my mask: ',mask)
-        os.system('arp -a >> arpa.txt')
+        try:
+            check_call(['arp', '-a', '>', 'arpa.txt'], shell=True)
+            print('0k2')
+        except:
+            import traceback
+            print(traceback.format_exc())
+        # os.system('arp -a >> arpa.txt')
         print('*'*50)
         dacercare = f'Interfaccia: '
         # print(len(self.myIpLan))
@@ -130,6 +148,7 @@ class IpFinder(mainwindow, QMainWindow):
             resultarpaTemp = arpa.readlines()
         # print(type(resultarpaTemp))
         listaIps = []
+        print('myiplan: ',self.myIpLan)
         for ar in resultarpaTemp:
             if (('Interfaccia: '+self.myIpLan) or ('Interface: '+self.myIpLan)) in ar:
                 indice = resultarpaTemp.index(ar)
@@ -154,13 +173,18 @@ class IpFinder(mainwindow, QMainWindow):
 
         self.tableWidget.setRowCount(0)
         self.riempiTab()
-        os.system(f'del {self.myIpFile}')
-        os.system(f'del arpa.txt')
-        os.system(f'del listaip.txt')
+
+        check_call(['del', self.myIpFile],shell=True)
+        check_call(['del', 'arpa.txt'],shell=True)
+        check_call(['del', 'listaip.txt'],shell=True)
+        # os.system(f'del {self.myIpFile}')
+        # os.system(f'del arpa.txt')
+        # os.system(f'del listaip.txt')
         return True
 
     def getPcName(self,ips):
-        os.system(f'ping -a -n 1 {ips} > listaip.txt')
+        check_call(['ping', '-a', '-n', '1', ips, '>', 'listaip.txt'],shell=True)
+        # os.system(f'ping -a -n 1 {ips} > listaip.txt')
 
         with open('listaip.txt', 'r') as ipf:
             # print(ipf.readline(2))
@@ -176,7 +200,7 @@ class IpFinder(mainwindow, QMainWindow):
             return self.listaNomi
     def initSpinner(self):
         self.spinner = MySp(self.spinnerWidget)
-        gridlay = QGridLayout(self.spinnerWidget)
+        gridlay = QtWidgets.QGridLayout(self.spinnerWidget)
         self.spinner.setRevolutionsPerSecond(1.2)
         gridlay.addWidget(self.spinner)
         self.spinnerWidget.setLayout(gridlay)
@@ -192,15 +216,10 @@ class IpFinder(mainwindow, QMainWindow):
         for ip, nome in self.listaNomi.items():
             self.tableWidget.insertRow(row)
             print(ip,' ',nome)
-            itemIp = QTableWidgetItem()
+            itemIp = QtWidgets.QTableWidgetItem()
             itemIp.setText(ip)
-            itemNome = QTableWidgetItem()
+            itemNome = QtWidgets.QTableWidgetItem()
             itemNome.setText(nome)
-            item = QTableWidgetItem()
-            item.setText('ciao')
-            # self.tableWidget.setItem(row, 0, item)
-            # self.tableWidget.item(itemIp, row, 0)
-            # self.tableWidget.item(itemNome, row, 1)
             self.tableWidget.setItem(row,0,itemIp)
             # self.tableWidget.setItem()
             self.tableWidget.setItem(row,1,itemNome)
@@ -219,7 +238,7 @@ class IpFinder(mainwindow, QMainWindow):
         cerca = self.comboBox_nomePc.findText(nome, QtCore.Qt.MatchExactly)
         if cerca == -1:
             self.comboBox_nomePc.addItem(nome)
-        print(cerca)
+        # print(cerca)
 
     def spinnerStart(self):
         self.spinner.setColor(QtCore.Qt.black)
@@ -253,7 +272,7 @@ class Worker(QtCore.QObject):
 
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     if len(sys.argv) > 1:
         nomePc = sys.argv
     main = IpFinder()
